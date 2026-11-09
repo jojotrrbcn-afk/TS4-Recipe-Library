@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#faf7f0">
+  <meta name="description" content="Your personal The Sims 4 CC recipe library. Add recipes by hand and let the randomiser choose what to cook.">
+  <title>Little Sim Kitchen | Recipe Library</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Little Sim Kitchen home">
+        <span class="brand-icon" aria-hidden="true">✳</span>
+        <span class="brand-copy"><strong>little sim kitchen</strong><small>THE RECIPE LIBRARY</small></span>
+      </a>
+      <div class="header-tools">
+        <button id="exportBtn" class="button button-subtle" type="button" title="Save a backup of your recipes"><span aria-hidden="true">↧</span> Export backup</button>
+        <label for="importFile" class="button button-subtle import-label" title="Import a previously exported JSON backup"><span aria-hidden="true">↥</span> Import backup</label>
+        <input id="importFile" type="file" accept=".json,application/json" class="visually-hidden">
+      </div>
+    </header>
+    <main>
+      <section class="hero" aria-labelledby="heroTitle">
+        <div>
+          <p class="eyebrow"><span class="eyebrow-dot"></span> THE SIMS 4 · YOUR OWN RECIPE COLLECTION</p>
+          <h1 id="heroTitle">A little something <em>delicious.</em></h1>
+          <p class="hero-description">Collect your favourite custom food recipes by hand, then leave the menu planning to chance.</p>
+        </div>
+        <div class="hero-illustration" aria-hidden="true">
+          <div class="plate-outer"><div class="plate-inner"><span class="plate-symbol">✿</span></div></div>
+          <span class="twinkle t-one">✦</span><span class="twinkle t-two">✧</span>
+        </div>
+      </section>
+      <section class="stats-row" aria-label="Library statistics">
+        <div class="stat"><span id="recipeCount" class="stat-number">0</span><span class="stat-label">recipes collected</span></div>
+        <div class="stat"><span id="creatorCount" class="stat-number">0</span><span class="stat-label">creators listed</span></div>
+        <div class="stat"><span id="mealCount" class="stat-number">0</span><span class="stat-label">meal categories</span></div>
+        <div class="stat-note">Made for the moments when you just can't decide what your Sim should eat. <span aria-hidden="true">✳</span></div>
+      </section>
+      <div class="workspace">
+        <section class="picker panel" aria-labelledby="pickerTitle">
+          <div class="panel-heading">
+            <span class="section-kicker">01 / THE RANDOMISER</span>
+            <span class="panel-ornament" aria-hidden="true">✴</span>
+          </div>
+          <h2 id="pickerTitle">What's on the <em>menu?</em></h2>
+          <p class="section-description">Not sure what your Sim should cook? Let the kitchen decide.</p>
+          <div class="field">
+            <label for="pickerMeal">Meal category</label>
+            <select id="pickerMeal"><option value="">Anything goes</option></select>
+          </div>
+          <div class="field">
+            <label for="pickerCreator">Recipe creator</label>
+            <select id="pickerCreator"><option value="">All creators</option></select>
+          </div>
+          <button id="pickBtn" class="button button-primary pick-button" type="button" disabled><span aria-hidden="true">✦</span> Pick a recipe for me <span aria-hidden="true">→</span></button>
+          <div id="pickResult" class="pick-result" aria-live="polite">
+            <div class="result-empty">
+              <div class="result-illustration" aria-hidden="true">☷</div>
+              <strong>Your next meal is a mystery.</strong>
+              <span>Add a recipe to get started.</span>
+            </div>
+          </div>
+          <p class="picker-footnote">Every matching recipe gets its turn before repeats.</p>
+        </section>
+        <section class="library panel" aria-labelledby="libraryTitle">
+          <div class="library-heading">
+            <div><span class="section-kicker">02 / YOUR COLLECTION</span><h2 id="libraryTitle">The recipe <em>box.</em></h2><p class="section-description">A home for every dish you discover.</p></div>
+            <button id="addBtn" class="button button-accent" type="button"><span aria-hidden="true">＋</span> Add recipe</button>
+          </div>
+          <div class="library-filters">
+            <label class="search-wrap"><span aria-hidden="true">⌕</span><span class="visually-hidden">Search recipes</span><input id="searchInput" type="search" placeholder="Search recipes, creators, ingredients…"></label>
+            <label class="visually-hidden" for="libraryMeal">Filter recipes by meal</label>
+            <select id="libraryMeal" class="filter-select"><option value="">All meals</option></select>
+          </div>
+          <div id="librarySummary" class="library-summary" aria-live="polite"></div>
+          <div id="recipeList" class="recipe-list"></div>
+          <div id="pagination" class="pagination" hidden>
+            <button id="prevPage" class="button button-subtle" type="button">← Previous</button>
+            <span id="pageLabel"></span>
+            <button id="nextPage" class="button button-subtle" type="button">Next →</button>
+          </div>
+        </section>
+      </div>
+    </main>
+    <footer class="site-footer">
+      <div><strong>little sim kitchen</strong><span> · A home for your favourite CC recipes.</span></div>
+      <p>Recipes are stored in <strong>this browser on this device</strong>. Export backups regularly, especially before clearing browser data.</p>
+    </footer>
+  </div>
+
+  <dialog id="recipeDialog" class="recipe-dialog" aria-labelledby="dialogTitle">
+    <form id="recipeForm">
+      <div class="dialog-header">
+        <div><span class="section-kicker">THE RECIPE BOX</span><h2 id="dialogTitle">Add a <em>recipe.</em></h2></div>
+        <button id="closeDialog" class="icon-button" type="button" aria-label="Close dialog">×</button>
+      </div>
+      <div class="dialog-content">
+        <div class="field"><label for="recipeName">Recipe name <span class="required">*</span></label><input id="recipeName" name="name" required maxlength="150" placeholder="e.g. Strawberry waffles" autocomplete="off"></div>
+        <div class="field-row">
+          <div class="field"><label for="recipeMeal">Meal category</label><select id="recipeMeal" name="meal"></select></div>
+          <div class="field"><label for="recipeCreator">CC creator</label><input id="recipeCreator" name="creator" maxlength="100" placeholder="e.g. Custom creator"></div>
+        </div>
+        <div class="field"><label for="recipeIngredients">Ingredients <span class="field-help">(one per line)</span></label><textarea id="recipeIngredients" name="ingredients" rows="4" placeholder="Flour&#10;Eggs&#10;Strawberries"></textarea></div>
+        <div class="field"><label for="recipeUrl">Recipe or download link <span class="field-help">(optional)</span></label><input id="recipeUrl" name="url" type="url" placeholder="https://www.patreon.com/…"></div>
+        <div class="field"><label for="recipeNotes">Notes <span class="field-help">(optional)</span></label><textarea id="recipeNotes" name="notes" rows="2" maxlength="2000" placeholder="Anything you want to remember…"></textarea></div>
+      </div>
+      <div class="dialog-footer">
+        <button id="cancelDialog" class="button button-subtle" type="button">Cancel</button>
+        <button id="saveRecipe" class="button button-accent" type="submit">Save recipe</button>
+      </div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
