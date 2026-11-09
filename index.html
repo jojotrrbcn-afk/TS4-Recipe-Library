@@ -7,7 +7,7 @@
   <meta name="description" content="Your personal The Sims 4 CC recipe library. Add recipes by hand and let the randomiser choose what to cook.">
   <title>Little Sim Kitchen | Recipe Library</title>
   <link rel="stylesheet" href="./styles.css?v=palette-20261109-2">
-  <script src="./app.js" defer></script>
+  <script src="./app.js?v=skills-20261109-1" defer></script>
 </head>
 <body>
   <div class="site-shell">
@@ -103,6 +103,21 @@
         <div class="field-row">
           <div class="field"><label for="recipeMeal">Meal category</label><select id="recipeMeal" name="meal"></select></div>
           <div class="field"><label for="recipeCreator">CC creator</label><input id="recipeCreator" name="creator" maxlength="100" placeholder="e.g. Custom creator"></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="recipeSkillType">Required cooking skill</label>
+            <select id="recipeSkillType" name="skillType">
+              <option value="">Not specified</option>
+              <option value="none">No skill required</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="recipeSkillLevel">Minimum skill level</label>
+            <select id="recipeSkillLevel" name="skillLevel" disabled>
+              <option value="">Not specified</option>
+            </select>
+          </div>
         </div>
         <div class="field"><label for="recipeIngredients">Ingredients <span class="field-help">(one per line)</span></label><textarea id="recipeIngredients" name="ingredients" rows="4" placeholder="Flour&#10;Eggs&#10;Strawberries"></textarea></div>
         <div class="field"><label for="recipeUrl">Recipe or download link <span class="field-help">(optional)</span></label><input id="recipeUrl" name="url" type="url" placeholder="https://www.patreon.com/…"></div>
