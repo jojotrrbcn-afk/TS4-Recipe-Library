@@ -3,6 +3,8 @@
 (function () {
   const STORAGE_KEY = 'little-sim-kitchen-recipes-v1';
   const CATEGORIES = ['Breakfast', 'Brunch', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Baking', 'Drinks', 'Other'];
+  const SKILLS = ['Cooking', 'Baking', 'Gourmet Cooking'];
+  const SKILL_NONE = 'none';
   const PAGE_SIZE = 8;
   const $ = (id) => document.getElementById(id);
   let recipes = [];
@@ -36,6 +38,9 @@
     const name = String(value.name || '').trim().slice(0, 150);
     if (!name) return null;
     const meal = CATEGORIES.includes(value.meal) ? value.meal : 'Other';
+    const skillType = SKILLS.includes(value.skillType) || value.skillType === SKILL_NONE ? value.skillType : '';
+    const parsedLevel = Number(value.skillLevel);
+    const skillLevel = SKILLS.includes(skillType) && Number.isInteger(parsedLevel) && parsedLevel >= 1 && parsedLevel <= 10 ? parsedLevel : null;
     const ingredients = (Array.isArray(value.ingredients) ? value.ingredients : String(value.ingredients || '').split(/\r?\n/))
       .filter((part) => typeof part === 'string').map((part) => part.trim().slice(0, 150)).filter(Boolean).slice(0, 80);
     return {
@@ -43,6 +48,8 @@
       name,
       meal,
       creator: String(value.creator || '').trim().slice(0, 100),
+      skillType,
+      skillLevel,
       ingredients,
       url: normaliseUrl(value.url),
       notes: String(value.notes || '').trim().slice(0, 2000),
@@ -133,6 +140,20 @@
     result.append(block);
   }
 
+  function skillRequirement(recipe) {
+    if (recipe.skillType === SKILL_NONE) return 'No skill required';
+    if (SKILLS.includes(recipe.skillType)) {
+      return recipe.skillType + (recipe.skillLevel === null ? ' · level not specified' : ' · Level ' + recipe.skillLevel);
+    }
+    return '';
+  }
+
+  function updateSkillLevelField() {
+    const enabled = SKILLS.includes($('recipeSkillType').value);
+    $('recipeSkillLevel').disabled = !enabled;
+    if (!enabled) $('recipeSkillLevel').value = '';
+  }
+
   function renderResult(recipe) {
     const result = $('pickResult');
     result.replaceChildren();
@@ -142,6 +163,8 @@
     block.append(el('p', 'result-meta', recipe.creator ? 'By ' + recipe.creator : 'From your recipe collection'));
     const tags = el('div', 'result-tags');
     tags.append(el('span', 'chip', recipe.meal));
+    const requirement = skillRequirement(recipe);
+    if (requirement) tags.append(el('span', 'chip chip-sand', requirement));
     block.append(tags);
     if (recipe.ingredients.length) {
       block.append(el('p', 'result-ingredients', 'Ingredients: ' + recipe.ingredients.join(', ')));
@@ -218,7 +241,7 @@
 
   function matchesSearch(recipe, search) {
     if (!search) return true;
-    return [recipe.name, recipe.creator, recipe.meal, recipe.notes, ...recipe.ingredients].some((part) => part.toLocaleLowerCase().includes(search));
+    return [recipe.name, recipe.creator, recipe.meal, recipe.notes, skillRequirement(recipe), ...recipe.ingredients].some((part) => part.toLocaleLowerCase().includes(search));
   }
 
   function renderLibrary() {
@@ -255,6 +278,8 @@
         card.append(top);
         const bottom = el('div', 'recipe-bottom');
         bottom.append(el('span', 'chip', recipe.meal));
+        const requirement = skillRequirement(recipe);
+        if (requirement) bottom.append(el('span', 'chip chip-sand', requirement));
         if (recipe.ingredients.length) bottom.append(el('span', 'chip chip-sand', recipe.ingredients.length + (recipe.ingredients.length === 1 ? ' ingredient' : ' ingredients')));
         if (recipe.url) {
           const link = el('a', 'card-link', 'Recipe link ↗');
@@ -289,6 +314,9 @@
     $('recipeName').value = recipe ? recipe.name : '';
     $('recipeMeal').value = recipe ? recipe.meal : 'Dinner';
     $('recipeCreator').value = recipe ? recipe.creator : '';
+    $('recipeSkillType').value = recipe ? recipe.skillType : '';
+    $('recipeSkillLevel').value = recipe && recipe.skillLevel !== null ? String(recipe.skillLevel) : '';
+    updateSkillLevelField();
     $('recipeIngredients').value = recipe ? recipe.ingredients.join('\n') : '';
     $('recipeUrl').value = recipe ? recipe.url : '';
     $('recipeNotes').value = recipe ? recipe.notes : '';
@@ -319,6 +347,8 @@
       name: $('recipeName').value,
       meal: $('recipeMeal').value,
       creator: $('recipeCreator').value,
+      skillType: $('recipeSkillType').value,
+      skillLevel: $('recipeSkillLevel').value,
       ingredients: $('recipeIngredients').value,
       url,
       notes: $('recipeNotes').value,
@@ -398,6 +428,12 @@
 
   function init() {
     CATEGORIES.forEach((name) => $('recipeMeal').add(new Option(name, name)));
+    SKILLS.forEach((name) => $('recipeSkillType').add(new Option(name, name)));
+    for (let level = 1; level <= 10; level++) {
+      $('recipeSkillLevel').add(new Option('Level ' + level, String(level)));
+    }
+    $('recipeSkillType').addEventListener('change', updateSkillLevelField);
+    updateSkillLevelField();
     loadRecipes();
     render();
     $('addBtn').addEventListener('click', () => openForm(null));
