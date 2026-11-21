@@ -3,7 +3,7 @@
 (function () {
   const STORAGE_KEY = 'little-sim-kitchen-recipes-v1';
   const CATEGORIES = ['Breakfast', 'Brunch', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Baking', 'Drinks', 'Ingredient', 'Other'];
-  const SKILLS = ['Cooking', 'Baking', 'Gourmet Cooking'];
+  const SKILLS = ['Cooking', 'Baking', 'Gourmet Cooking', 'Canning'];
   const SKILL_NONE = 'none';
   const PAGE_SIZE = 8;
   const $ = (id) => document.getElementById(id);
