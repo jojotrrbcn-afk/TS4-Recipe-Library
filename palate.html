@@ -126,8 +126,9 @@ function syncKitchenRecipes(){
     for(const [key,value] of Object.entries(fields)){
       if(JSON.stringify(entry[key])!==JSON.stringify(value)){entry[key]=value;changed=true}
     }
-    if(!Array.isArray(entry.types)||!entry.types.length){
-      entry.types=meal&&meal!=='Other'?[clean(meal)]:[];
+    if(!Array.isArray(entry.types)){entry.types=[];changed=true}
+    if(!entry.types.length&&meal&&meal!=='Other'){
+      entry.types=[clean(meal)];
       changed=true;
     }
   }
