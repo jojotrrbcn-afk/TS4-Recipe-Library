@@ -9,6 +9,8 @@
   const $ = (id) => document.getElementById(id);
   let recipes = [];
   let page = 1;
+  let activeCreatorKey = null;
+  let libraryOpen = false;
   let editingId = null;
   let selectionBag = [];
   let bagSignature = '';
@@ -244,22 +246,96 @@
     return [recipe.name, recipe.creator, recipe.meal, recipe.notes, skillRequirement(recipe), ...recipe.ingredients].some((part) => part.toLocaleLowerCase().includes(search));
   }
 
+  function creatorKey(recipe) {
+    return recipe.creator.trim().toLocaleLowerCase();
+  }
+
+  function creatorGroups() {
+    const groups = new Map();
+    recipes.forEach((recipe) => {
+      const key = creatorKey(recipe);
+      if (!groups.has(key)) groups.set(key, { key, name: recipe.creator || 'Creator not specified', count: 0 });
+      groups.get(key).count++;
+    });
+    return [...groups.values()].sort((a, b) => {
+      if (!a.key) return 1;
+      if (!b.key) return -1;
+      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    });
+  }
+
+  function chooseCreator(key) {
+    activeCreatorKey = key;
+    page = 1;
+    $('searchInput').value = '';
+    $('libraryMeal').value = '';
+    renderLibrary();
+  }
+
+  function toggleLibrary() {
+    libraryOpen = !libraryOpen;
+    $('librarySection').hidden = !libraryOpen;
+    $('workspace').classList.toggle('library-closed', !libraryOpen);
+    $('browseRecipesBtn').setAttribute('aria-expanded', String(libraryOpen));
+    $('browseRecipesBtn').textContent = libraryOpen ? '▤ Hide recipes' : '▤ Recipes';
+    if (libraryOpen) {
+      activeCreatorKey = null;
+      renderLibrary();
+    }
+  }
+
+  function renderCreatorList(groups) {
+    const list = $('creatorList');
+    list.replaceChildren();
+    if (!groups.length) {
+      const blank = el('div', 'empty-library');
+      blank.append(el('div', 'empty-icon', '✿'));
+      blank.append(el('strong', '', 'Your recipe box is empty.'));
+      blank.append(el('p', '', 'Use Add recipe to start your collection. Creators will appear here automatically.'));
+      list.append(blank);
+      return;
+    }
+    groups.forEach((group) => {
+      const button = el('button', 'creator-card');
+      button.type = 'button';
+      button.setAttribute('aria-label', 'View ' + group.count + ' recipes by ' + group.name);
+      const info = el('span', 'creator-card-info');
+      info.append(el('span', 'creator-name', group.name));
+      info.append(el('span', 'creator-count', group.count + (group.count === 1 ? ' recipe' : ' recipes')));
+      button.append(info, el('span', 'creator-arrow', '→'));
+      button.addEventListener('click', () => chooseCreator(group.key));
+      list.append(button);
+    });
+  }
+
   function renderLibrary() {
+    const groups = creatorGroups();
+    if (activeCreatorKey !== null && !groups.some((group) => group.key === activeCreatorKey)) {
+      activeCreatorKey = null;
+    }
+    renderCreatorList(groups);
+    $('creatorView').hidden = activeCreatorKey !== null;
+    $('creatorRecipesView').hidden = activeCreatorKey === null;
+    if (activeCreatorKey === null) return;
+
+    const group = groups.find((item) => item.key === activeCreatorKey);
+    $('activeCreatorTitle').textContent = group.name;
     const search = $('searchInput').value.toLocaleLowerCase().trim();
     const meal = $('libraryMeal').value;
-    const filtered = recipes.filter((r) => (!meal || r.meal === meal) && matchesSearch(r, search))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const creatorRecipes = recipes.filter((r) => creatorKey(r) === activeCreatorKey);
+    const filtered = creatorRecipes.filter((r) => (!meal || r.meal === meal) && matchesSearch(r, search))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-    page = Math.min(page, totalPages);
+    page = Math.max(1, Math.min(page, totalPages));
     const list = $('recipeList');
     list.replaceChildren();
-    $('librarySummary').textContent = recipes.length ? filtered.length + ' of ' + recipes.length + ' recipes' : '';
+    $('librarySummary').textContent = filtered.length + ' of ' + creatorRecipes.length + ' recipes by ' + group.name;
 
-    if (!recipes.length || !filtered.length) {
+    if (!filtered.length) {
       const blank = el('div', 'empty-library');
-      blank.append(el('div', 'empty-icon', recipes.length ? '⌕' : '✿'));
-      blank.append(el('strong', '', recipes.length ? 'No matching dishes.' : 'Your recipe box is empty.'));
-      blank.append(el('p', '', recipes.length ? 'Try a different search or meal category.' : 'Add your first Sims 4 CC recipe to start your collection.'));
+      blank.append(el('div', 'empty-icon', '⌕'));
+      blank.append(el('strong', '', 'No matching dishes.'));
+      blank.append(el('p', '', 'Try another search or meal category, or go back to all creators.'));
       list.append(blank);
     } else {
       filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).forEach((recipe) => {
@@ -437,6 +513,8 @@
     loadRecipes();
     render();
     $('addBtn').addEventListener('click', () => openForm(null));
+    $('browseRecipesBtn').addEventListener('click', toggleLibrary);
+    $('backToCreators').addEventListener('click', () => chooseCreator(null));
     $('closeDialog').addEventListener('click', closeForm);
     $('cancelDialog').addEventListener('click', closeForm);
     $('recipeForm').addEventListener('submit', submitForm);
