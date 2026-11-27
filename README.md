@@ -12,9 +12,11 @@ The **Recipes tab is the master collection.** The Palate automatically reflects 
 
 ## Weekly meal plans
 
-Open **The Palate → Meal Plan** to select an individual Sim and generate a Monday-to-Sunday meal plan from their saved liked (4/5) and loved (5/5) recipes. Breakfast/Brunch, Lunch, Dinner, Snacks, Dessert and Drinks have separate sections. The main Kitchen meal category determines the section, falling back to Palate type tags for older recipes. One liked lunch repeats every day; unknown, neutral, disliked and hated dishes are never inserted. Empty categories stay blank.
+Open **The Palate → Meal Plan** to see a responsive weekly timetable: seven columns for Monday through Sunday and rows for Breakfast/Brunch, Lunch, Dinner, Snack, Dessert and Drinks. Small screens can scroll the grid horizontally while the meal labels remain visible.
 
-Each week and Sim has a separately saved schedule, included in Palate JSON backups. **Randomise again** replaces that week's schedule, and the plan remains unchanged otherwise. You can drag and drop a dish into any slot, including a different day or meal category, swapping with the destination dish or moving into an empty slot. For phones, tablets and keyboard users, select a dish and then its destination to perform the same move.
+The planner uses each Sim's **saved recipe ratings**. Loved (5/5), liked (4/5), and neutral (3/5) recipes are all eligible; the randomiser first picks a preference tier with relative weights **5:3:1**, then chooses a recipe within that tier. This means loved recipes are generally favoured over liked, and liked over neutral, even when the number of neutral recipes is large. Untested, disliked and hated foods are excluded. A category containing only one eligible recipe will repeat that dish across the week; an empty category stays blank. The Kitchen meal category determines the default section, falling back to Palate type tags for older recipes.
+
+Each Sim and week has a separately saved schedule, included in Palate JSON backups. **Randomise again** replaces that week's schedule. Drag and drop any dish to move or swap it across days or meal categories; on mobile or with a keyboard, select a meal and then select the destination. Existing saved plans remain in place after updating and only change when explicitly rearranged or regenerated.
 
 ## Features
 
