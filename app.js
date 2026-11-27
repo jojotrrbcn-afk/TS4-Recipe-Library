@@ -83,6 +83,7 @@
       recipes = next;
       invalidateBag();
       render();
+      requestPalateSync();
       return true;
     } catch (_) {
       alert('Your browser could not save this change. Your existing recipes were left untouched. Export a backup, and check that browser storage is enabled and has space.');
@@ -511,73 +512,19 @@
     $('mainTabPalate').classList.toggle('active', palate);
     $('mainTabRecipes').setAttribute('aria-selected', String(!palate));
     $('mainTabPalate').setAttribute('aria-selected', String(palate));
+    if (palate) requestPalateSync();
   }
 
-  function copyToPalate() {
-    if (!recipes.length) {
-      showToast('Add recipes to the Kitchen before copying them to The Palate.');
-      return;
+  function requestPalateSync() {
+    const frame = $('palateFrame');
+    if (frame && frame.contentWindow) {
+      frame.contentWindow.postMessage({ type: 'little-kitchen-sync' }, window.location.origin);
     }
-    let palateData;
-    try {
-      const saved = localStorage.getItem('ts4-the-palate-v1');
-      palateData = saved ? JSON.parse(saved) : { version: 1, sims: [], recipes: [], history: [] };
-      if (!palateData || palateData.version !== 1 || !Array.isArray(palateData.sims) ||
-          !Array.isArray(palateData.recipes) || !Array.isArray(palateData.history)) {
-        throw new Error('Invalid Palate data');
-      }
-    } catch (_) {
-      alert('The Palate already has data in an unexpected format. Nothing was changed. Please export a backup from The Palate before trying again.');
-      return;
-    }
-    const linkedIds = new Set(palateData.recipes.map((r) => r.kitchenRecipeId).filter(Boolean));
-    const manuallyAddedNames = new Set(palateData.recipes
-      .filter((r) => !r.kitchenRecipeId)
-      .map((r) => String(r.name || '').trim().toLocaleLowerCase()));
-    const newEntries = [];
-    let skippedByName = 0;
-    recipes.forEach((r) => {
-      if (linkedIds.has(r.id)) return;
-      if (manuallyAddedNames.has(r.name.trim().toLocaleLowerCase())) {
-        skippedByName++;
-        return;
-      }
-      const notes = [
-        r.creator ? 'CC creator: ' + r.creator : '',
-        r.url ? 'Recipe link: ' + r.url : '',
-        r.skillType === 'none' ? 'No cooking skill required' :
-          (r.skillType ? 'Required skill: ' + r.skillType + (r.skillLevel !== null ? ' Level ' + r.skillLevel : '') : ''),
-        r.notes
-      ].filter(Boolean).join('\n');
-      newEntries.push({
-        id: makeId(), kitchenRecipeId: r.id, name: r.name,
-        kind: r.meal === 'Drinks' ? 'Drink' : 'Food',
-        ingredients: [...new Set(r.ingredients.map((value) => value.toLocaleLowerCase().trim()).filter(Boolean))],
-        prominent: [], flavours: [], textures: [], cuisines: [],
-        types: r.meal && r.meal !== 'Other' ? [r.meal.toLocaleLowerCase()] : [],
-        notes
-      });
-    });
-    if (!newEntries.length) {
-      showToast(skippedByName ? 'No new recipes to copy. Some names already exist in The Palate.' : 'All Kitchen recipes are already in The Palate.');
-      return;
-    }
-    palateData.recipes.push(...newEntries);
-    try {
-      localStorage.setItem('ts4-the-palate-v1', JSON.stringify(palateData));
-    } catch (_) {
-      alert('Could not save to The Palate. Your existing recipes and Sim ratings were not changed.');
-      return;
-    }
-    $('palateFrame').contentWindow.location.reload();
-    showToast('Added ' + newEntries.length + ' recipes to The Palate.' +
-      (skippedByName ? ' ' + skippedByName + ' matching names skipped.' : ''));
   }
 
   function setupMainTabs() {
     $('mainTabRecipes').addEventListener('click', () => showMainTab('recipes'));
     $('mainTabPalate').addEventListener('click', () => showMainTab('palate'));
-    $('copyToPalateBtn').addEventListener('click', copyToPalate);
     window.addEventListener('message', (event) => {
       const iframe = $('palateFrame');
       if (event.source !== iframe.contentWindow || event.origin !== window.location.origin) return;
