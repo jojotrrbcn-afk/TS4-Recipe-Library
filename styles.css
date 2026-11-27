@@ -20,3 +20,24 @@
 .active-creator-title{font-family:'DM Serif Display',Georgia,serif;font-weight:400;font-size:23px;margin:0;overflow-wrap:anywhere}
 .back-to-creators{min-height:38px}
 @media(max-width:620px){.picker-actions .button{padding:10px 11px}.creator-list{grid-template-columns:1fr}}
+
+/* Unified app header and embedded The Palate */
+.app-tabs{display:flex;gap:9px;border-bottom:1px solid var(--line);padding:19px 0 17px;align-items:center}
+.app-tab{border:1px solid var(--line);border-radius:11px;background:#FFFDF9;color:#4D6A6D;padding:11px 24px;min-height:45px;font-size:13px;font-weight:700;transition:background .15s,border-color .15s}
+.app-tab:hover{border-color:#798478;background:#EEE6D6}
+.app-tab.active{background:#4D6A6D;color:#FFFDF9;border-color:#4D6A6D}
+#recipesView[hidden],#palateView[hidden]{display:none!important}
+.palate-host{padding:34px 0 55px}
+.palate-host-heading{margin:0 0 26px}
+.palate-host-heading .eyebrow{margin:0 0 9px}
+.palate-host-heading h1{font-size:clamp(34px,4vw,48px);margin:0 0 11px}
+.palate-host-heading h1 em{font-style:italic;color:#4D6A6D}
+.palate-host-heading p:not(.eyebrow){font-size:13px;color:var(--muted);line-height:1.7;max-width:740px;margin:0}
+.palate-tools{display:flex;align-items:center;gap:15px;padding:16px 19px;background:#FFFDF9;border:1px solid var(--line);border-radius:14px;margin:0 0 13px}
+.palate-tools p{margin:0;font-size:11px;line-height:1.6;color:var(--muted)}
+.palate-tools button{white-space:normal;text-align:center;flex:none}
+.palate-migration{margin:0 0 24px;padding:13px 18px;border:1px solid #D4C7B2;border-radius:11px;background:#F4EFE5;color:var(--ink);font-size:12px;line-height:1.7}
+.palate-migration summary{cursor:pointer;font-weight:700;color:#4D6A6D}
+.palate-migration p{margin:10px 0 0}
+.palate-frame{display:block;width:100%;border:0;background:transparent;min-height:640px;height:930px}
+@media(max-width:720px){.palate-tools{display:block}.palate-tools button{width:100%;margin-bottom:12px}.app-tab{flex:1;padding:11px 10px}.palate-host{padding-top:25px}}
