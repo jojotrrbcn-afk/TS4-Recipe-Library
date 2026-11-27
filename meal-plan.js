@@ -53,7 +53,7 @@ function recipeMeal(recipe){
 }
 function candidates(sim){
   api.pvals(sim);
-  return api.getState().recipes.filter(recipe=>Number(sim.ratings[recipe.id]?.score)>=4&&recipeMeal(recipe));
+  return api.getState().recipes.filter(recipe=>Number(sim.ratings[recipe.id]?.score)>=3&&recipeMeal(recipe));
 }
 function shuffled(source){
   const arr=source.slice();
@@ -64,27 +64,40 @@ function shuffled(source){
   return arr;
 }
 function makeSlots(sim,previous){
-  const liked=candidates(sim),groups={};
+  const suitable=candidates(sim),groups={};
   for(const [key] of meals){
-    groups[key]={pool:liked.filter(r=>recipeMeal(r)===key).map(r=>r.id),bag:[],last:''};
+    const recipes=suitable.filter(r=>recipeMeal(r)===key);
+    groups[key]={
+      tiers:[5,4,3].map(score=>({score,weight:score===5?5:score===4?3:1,
+        pool:recipes.filter(r=>Number(sim.ratings[r.id]?.score)===score).map(r=>r.id),bag:[],last:''}))
+    };
   }
   const slots={};
   for(let d=0;d<7;d++){
     for(const [key] of meals){
       const group=groups[key],slot=d+':'+key;
-      if(!group.pool.length){slots[slot]='';continue}
-      if(!group.bag.length){
-        group.bag=shuffled(group.pool);
-        if(group.bag.length>1&&group.bag[0]===group.last){
-          const alt=group.bag.findIndex(id=>id!==group.last);
-          [group.bag[0],group.bag[alt]]=[group.bag[alt],group.bag[0]];
+      const tiers=group.tiers.filter(tier=>tier.pool.length);
+      if(!tiers.length){slots[slot]='';continue}
+      // Choose the preference tier first. This prevents a large collection of
+      // neutral foods from overpowering a smaller collection of favourites.
+      const total=tiers.reduce((sum,tier)=>sum+tier.weight,0);
+      let roll=api.rand()*total,chosenTier=tiers[tiers.length-1];
+      for(const tier of tiers){
+        roll-=tier.weight;
+        if(roll<0){chosenTier=tier;break}
+      }
+      if(!chosenTier.bag.length){
+        chosenTier.bag=shuffled(chosenTier.pool);
+        if(chosenTier.bag.length>1&&chosenTier.bag[0]===chosenTier.last){
+          const index=chosenTier.bag.findIndex(id=>id!==chosenTier.last);
+          [chosenTier.bag[0],chosenTier.bag[index]]=[chosenTier.bag[index],chosenTier.bag[0]];
         }
       }
-      // Favor a new choice in this slot when a second valid recipe exists.
-      const pos=group.bag.length>1?group.bag.findIndex(id=>id!==previous[slot]):-1;
-      const recipeId=group.bag.splice(pos<0?0:pos,1)[0];
-      slots[slot]=recipeId;
-      group.last=recipeId;
+      const alternative=chosenTier.bag.length>1?
+        chosenTier.bag.findIndex(id=>id!==previous[slot]&&id!==chosenTier.last):-1;
+      const choice=chosenTier.bag.splice(alternative<0?0:alternative,1)[0];
+      slots[slot]=choice;
+      chosenTier.last=choice;
     }
   }
   return slots;
@@ -93,7 +106,7 @@ function generate(){
   const sim=currentSim();
   if(!sim)return;
   if(!candidates(sim).length){
-    api.toast('Taste-test recipes first. Meal plans use saved Likes and Loves.');
+    api.toast('Taste-test recipes first. Meal plans use saved neutral, liked and loved opinions.');
     return;
   }
   const all=storage(),key=sim.id+'::'+currentWeek(),old=all[key];
@@ -142,56 +155,76 @@ function selectSlot(slot){
 function render(){
   const sim=currentSim(),start=dateFromKey(currentWeek());
   const end=new Date(start.getFullYear(),start.getMonth(),start.getDate()+6);
-  const f=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'});
-  const label=f.format(start)+' – '+f.format(end);
-  const plan=currentPlan(),liked=sim?candidates(sim):[];
-  const byId=new Map(liked.map(r=>[r.id,r]));
-  let output=api.section('Weekly meal plan','A personalised Monday-to-Sunday menu chosen from recipes this Sim likes or loves.')+
-    '<div class="card"><div class="plan-controls"><div class="field"><label for="plan-sim">Choose a Sim</label><select id="plan-sim">'+
+  const dateFormat=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'});
+  const weekLabel=dateFormat.format(start)+' – '+dateFormat.format(end);
+  const plan=currentPlan(),suitable=sim?candidates(sim):[];
+  const byId=new Map(suitable.map(r=>[r.id,r]));
+  const counts={5:0,4:0,3:0};
+  suitable.forEach(recipe=>{counts[Number(sim.ratings[recipe.id].score)]++});
+
+  let output=api.section('Weekly meal plan','Your personalised week at a glance, from familiar favourites to occasional neutral dishes.')+
+    '<div class="card plan-top"><div class="plan-controls"><div class="field"><label for="plan-sim">Whose menu?</label><select id="plan-sim">'+
     api.opts(api.getState().sims,sim?.id||'','Choose a Sim')+'</select></div>'+
     '<div class="plan-week"><button type="button" class="btn ghost small" data-plan-action="previous" aria-label="Previous week">←</button>'+
-    '<strong>Week of '+api.esc(label)+'</strong>'+
+    '<strong>Week of '+api.esc(weekLabel)+'</strong>'+
     '<button type="button" class="btn ghost small" data-plan-action="next" aria-label="Next week">→</button></div></div>'+
-    '<p class="plan-help">Only saved opinions of <b>Likes it (4/5)</b> or <b>Loves it (5/5)</b> qualify. One liked lunch means that lunch every day. Untasted, neutral and disliked foods are never added just to fill an empty slot.</p>'+
-    '<div class="plan-generate"><button type="button" class="btn" data-plan-action="generate"'+(!sim||!liked.length?' disabled':'')+'>'+
-    (plan?'↻ Randomise again':'✦ Generate weekly plan')+'</button>'+
-    (sim?'<span class="hint">'+liked.length+' liked or loved '+(liked.length===1?'recipe':'recipes')+' available</span>':'')+
+    '<div class="plan-legend" aria-label="Meal selection priorities">'+
+    '<span><i class="legend-dot love"></i><b>Loved</b> · 5 chances</span>'+
+    '<span><i class="legend-dot like"></i><b>Liked</b> · 3 chances</span>'+
+    '<span><i class="legend-dot neutral"></i><b>Neutral</b> · 1 chance</span>'+
+    '</div>'+
+    '<p class="plan-help">The randomiser chooses from a Sim’s <b>saved taste ratings</b>. Loved recipes are most likely, liked recipes follow, and neutral foods occasionally appear. Untested, disliked and hated recipes are excluded. If only one suitable dish exists for a meal, it repeats all week.</p>'+
+    '<div class="plan-generate"><button type="button" class="btn" data-plan-action="generate"'+(!sim||!suitable.length?' disabled':'')+'>'+
+    (plan?'↻ Randomise again':'✦ Create weekly menu')+'</button>'+
+    (sim?'<span class="plan-count">'+counts[5]+' loved · '+counts[4]+' liked · '+counts[3]+' neutral recipes</span>':'')+
     '</div>';
-  if(!sim)return output+'<div class="empty"><strong>No Sims yet</strong>Create a Sim under My Sims to begin.</div></div>';
-  if(!liked.length)return output+'<div class="empty"><strong>No liked recipes yet</strong>Use Taste test to rate some dishes. You can generate the week once this Sim likes or loves a recipe.</div></div>';
-  if(!plan)return output+'<div class="empty"><strong>Ready for a weekly menu?</strong>Generate a seven-day plan for '+api.esc(sim.name)+'.</div></div>';
-  if(selected)output+='<p class="plan-selected" role="status">Meal selected. Choose any other slot, including a different meal category or day, to swap or move it. Select the same slot to cancel.</p>';
-  output+='</div><div class="plan-days">';
+
+  if(!sim)return output+'<div class="empty plan-empty"><strong>No Sims yet</strong>Create a Sim under My Sims to begin planning meals.</div></div>';
+  if(!suitable.length)return output+'<div class="empty plan-empty"><strong>No saved recipe opinions yet</strong>Use Taste test to discover recipes this Sim loves, likes or feels neutral about.</div></div>';
+  if(!plan)return output+'<div class="empty plan-empty"><strong>Ready to plan '+api.esc(sim.name)+'’s week?</strong>Choose Create weekly menu to fill the table.</div></div>';
+
+  if(selected)output+='<p class="plan-selected" role="status">Meal selected. Click another slot, even on a different day or meal, to swap or move it. Click this slot again to cancel.</p>';
+  output+='</div><div class="plan-table-scroll" role="region" tabindex="0" aria-label="Weekly meal timetable, scroll horizontally for more days">'+
+    '<table class="plan-table"><thead><tr><th scope="col" class="plan-corner">MEAL <span>✿</span></th>';
   for(let d=0;d<7;d++){
     const day=new Date(start.getFullYear(),start.getMonth(),start.getDate()+d);
-    output+='<section class="plan-day"><h3>'+days[d]+' <small>'+api.esc(f.format(day))+'</small></h3>';
-    for(const [key,mealName] of meals){
-      const slot=d+':'+key,id=plan.slots?.[slot]||'';
-      const r=byId.get(id);
-      const old=id?api.getState().recipes.find(x=>x.id===id):null;
+    output+='<th scope="col"><span class="day-name">'+days[d]+'</span><span class="day-date">'+api.esc(dateFormat.format(day))+'</span></th>';
+  }
+  output+='</tr></thead><tbody>';
+
+  for(const [mealKey,mealName] of meals){
+    output+='<tr><th scope="row" class="plan-row-label"><span class="meal-symbol" aria-hidden="true">'+
+      ({breakfast:'☀',lunch:'◒',dinner:'✦',snack:'✿',dessert:'♡',drinks:'♧'}[mealKey])+
+      '</span><span>'+api.esc(mealName)+'</span></th>';
+    for(let d=0;d<7;d++){
+      const slot=d+':'+mealKey,id=plan.slots?.[slot]||'';
+      const r=byId.get(id),stillExists=id?api.getState().recipes.some(x=>x.id===id):false;
       let content;
       if(r){
-        const score=Number(sim.ratings[r.id]?.score),fav=api.isFavouriteRecipe(sim,r);
-        const creator=r.kitchenCreator||'';
-        content='<b>'+api.esc(r.name)+'</b><small>'+api.esc(creator)+
-          (creator?' · ':'')+api.esc(['','Hates it','Dislikes it','Neutral','Likes it','Loves it'][score])+
-          (fav?' · ★ Favourite':'')+'</small>';
-      }else if(old){
-        content='<span class="plan-no-food">No longer liked. Randomise again.</span>';
+        const score=Number(sim.ratings[r.id]?.score);
+        const ratingName=score===5?'Loved':score===4?'Liked':'Neutral';
+        const status=score===5?'love':score===4?'like':'neutral';
+        const favourite=api.isFavouriteRecipe(sim,r);
+        content='<span class="plan-dish">'+api.esc(r.name)+'</span>'+
+          '<span class="plan-rating '+status+'">'+(favourite?'★ ':'')+ratingName+'</span>';
       }else if(id){
-        content='<span class="plan-no-food">Recipe unavailable. Randomise again.</span>';
+        content='<span class="plan-no-food">'+
+          (stillExists?'Opinion changed':'Recipe unavailable')+
+          '<small>Randomise again</small></span>';
       }else{
-        content='<span class="plan-no-food">No liked recipe yet</span>';
+        content='<span class="plan-no-food">Not yet planned</span>';
       }
       const isSelected=selected===slot;
-      output+='<button type="button" class="plan-slot'+(isSelected?' selected':'')+
+      output+='<td><button type="button" class="plan-slot'+(isSelected?' selected':'')+
         '" data-plan-slot="'+api.esc(slot)+'" '+(r?'draggable="true"':'')+
-        ' aria-pressed="'+isSelected+'" title="Drag to move or swap, or select this meal and a destination">'+
-        '<span class="plan-label">'+api.esc(mealName)+'</span><span class="plan-meal">'+content+'</span></button>';
+        ' aria-pressed="'+isSelected+'" aria-label="'+api.esc(days[d]+', '+mealName+': '+(r?r.name:'empty'))+
+        '" title="Drag to move or swap, or click this meal then its destination">'+content+'</button></td>';
     }
-    output+='</section>';
+    output+='</tr>';
   }
-  return output+'</div><p class="plan-footer">Drag a meal onto any other slot to swap them. Dropping into an empty slot moves it there. On touch screens, tap the meal and then its destination instead. The saved plan stays unchanged until you rearrange it or click Randomise again. Each Sim and week has its own saved menu.</p>';
+  output+='</tbody></table></div>'+
+    '<p class="plan-footer"><span aria-hidden="true">↔</span> Scroll sideways to see every day on smaller screens. Drag meals between cells to move or swap them; on touchscreens or with a keyboard, select one meal and then its destination. Your changes save automatically, and Randomise again replaces this week’s plan.</p>';
+  return output;
 }
 document.addEventListener('click',e=>{
   const slot=e.target.closest?.('[data-plan-slot]');
