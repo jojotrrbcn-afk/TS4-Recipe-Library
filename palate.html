@@ -42,30 +42,59 @@ body{background:transparent;color:var(--ink);font-family:system-ui,-apple-system
 </style>
 
 <style id="meal-planner-styles">
-.plan-controls{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:15px}
-.plan-controls .field{margin:0;min-width:210px;flex:1;max-width:320px}
-.plan-week{display:flex;align-items:center;gap:9px}
-.plan-week strong{font:normal 18px Georgia,serif;min-width:185px;text-align:center}
-.plan-help{margin:18px 0 0!important;font-size:13px!important;line-height:1.65}
-.plan-generate{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-top:18px}
-.plan-days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin-top:16px}
-.plan-day{background:#fffefa;border:1px solid var(--line);padding:17px;border-radius:13px;min-width:0}
-.plan-day h3{font:normal 23px Georgia,serif;margin:0 0 10px;padding-bottom:11px;border-bottom:1px solid var(--line)}
-.plan-day h3 small{font:normal 12px system-ui,sans-serif;color:var(--muted);margin-left:8px}
-.plan-slot{font:inherit;color:var(--ink);border:1px solid transparent;border-bottom:1px solid #e9e4da;background:transparent;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-width:0;text-align:left;border-radius:7px;padding:11px 7px;cursor:pointer}
-.plan-slot:last-child{border-bottom-color:transparent}
-.plan-slot:hover{background:#eef0e8;border-color:#d4c7b2}
-.plan-slot.selected{background:#e4e5d7;border-color:#798478}
+.plan-top{padding:22px 25px;margin-bottom:16px}
+.plan-controls{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px}
+.plan-controls .field{margin:0;min-width:220px;flex:1;max-width:340px}
+.plan-week{display:flex;align-items:center;gap:12px}
+.plan-week strong{font:normal 20px Georgia,serif;min-width:200px;text-align:center}
+.plan-legend{display:flex;flex-wrap:wrap;gap:9px 18px;margin-top:22px;align-items:center}
+.plan-legend>span{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11px}
+.plan-legend b{color:var(--ink)}
+.legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%}
+.legend-dot.love{background:#4d6a6d}.legend-dot.like{background:#798478}.legend-dot.neutral{background:#c9ada1}
+.plan-help{margin:14px 0 0!important;font-size:12px!important;line-height:1.75}
+.plan-generate{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:19px}
+.plan-count{font-size:12px;color:var(--muted)}
+.plan-selected{background:#e4e5d7;color:#30494b;border:1px solid #a0a083;padding:11px 15px;border-radius:10px;margin:15px 0 0!important;font-size:12px!important}
+.plan-empty{margin-top:20px}
+.plan-table-scroll{width:100%;border:1px solid var(--line);border-radius:17px;overflow-x:auto;overflow-y:hidden;background:var(--card);box-shadow:0 7px 30px rgba(71,63,51,.045);scrollbar-color:#a0a083 #f4efe6}
+.plan-table{border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%;min-width:1080px;font-size:12px}
+.plan-table thead th{background:#4d6a6d;color:#fffdf9;padding:17px 7px 15px;font-weight:650;text-align:center;border-right:1px solid rgba(255,255,255,.17)}
+.plan-table thead th:last-child{border-right:0}
+.plan-table thead th.plan-corner{position:sticky;left:0;z-index:3;width:136px;text-align:left;padding-left:18px;font-size:10px;letter-spacing:.16em}
+.plan-corner span{font-size:16px;color:#eae0cc;padding-left:8px}
+.plan-table .day-name{display:block;font:normal 18px Georgia,serif;letter-spacing:0}
+.plan-table .day-date{display:block;margin-top:5px;font-size:10px;letter-spacing:.06em;color:#eae0cc}
+.plan-table tbody tr{background:#fffefa}
+.plan-table tbody tr:nth-child(even){background:#f8f7f1}
+.plan-table tbody tr:last-child td,.plan-table tbody tr:last-child th{border-bottom:none}
+.plan-table tbody td{border-right:1px solid #e9e2d7;border-bottom:1px solid #e9e2d7;padding:8px;vertical-align:top;min-width:0}
+.plan-table tbody td:last-child{border-right:0}
+.plan-table .plan-row-label{position:sticky;left:0;z-index:2;width:136px;padding:15px 12px 12px 17px;text-align:left;vertical-align:middle;background:#e8ebdf;color:#385659;border-bottom:1px solid #d4c7b2;border-right:1px solid #d4c7b2;font:600 12px/1.4 system-ui,sans-serif}
+.plan-table tbody tr:nth-child(even) .plan-row-label{background:#e5e6db}
+.plan-row-label .meal-symbol{display:block;font-size:22px;font-weight:400;line-height:1;margin-bottom:10px;color:#798478}
+.plan-row-label span:last-child{display:block}
+.plan-slot{font:inherit;color:var(--ink);border:1px solid transparent;border-radius:10px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;width:100%;min-height:91px;padding:9px 5px;text-align:center;cursor:pointer;overflow-wrap:anywhere}
+.plan-slot:hover{background:#eaece3;border-color:#a0a083}
+.plan-slot.selected{background:#e4e5d7;border:2px solid #4d6a6d}
 .plan-slot.drag-over{background:#e4e5d7;border:2px dashed #4d6a6d}
-.plan-slot.dragging{opacity:.4}
-.plan-label{color:var(--muted);font-size:11px;font-weight:750;flex:0 0 105px}
-.plan-meal{flex:1;min-width:0;text-align:right;overflow-wrap:anywhere}
-.plan-meal b{display:block;font-size:13px;line-height:1.4}
-.plan-meal small{display:block;margin-top:2px;color:var(--muted);font-size:11px}
-.plan-no-food{color:var(--muted);font-size:11px;font-style:italic}
-.plan-selected{background:#e4e5d7;color:#30494b;border:1px solid #a0a083;padding:11px 15px;border-radius:10px;margin-top:14px!important;font-size:12px!important}
-.plan-footer{font-size:12px;color:var(--muted);line-height:1.7;margin:16px 0 0}
-@media(max-width:760px){.plan-days{grid-template-columns:1fr}.plan-controls{display:block}.plan-controls .field{max-width:none;margin-bottom:16px}.plan-week{justify-content:space-between}.plan-week strong{min-width:auto}}
+.plan-slot.dragging{opacity:.35}
+.plan-slot[draggable="true"]{cursor:grab}
+.plan-slot[draggable="true"]:active{cursor:grabbing}
+.plan-dish{font-size:12px;font-weight:650;line-height:1.45;color:#30494b}
+.plan-rating{display:inline-block;padding:4px 8px;border-radius:100px;font-size:10px;font-weight:700;line-height:1.2}
+.plan-rating.love{background:#dfe9df;color:#385659}
+.plan-rating.like{background:#e9eadc;color:#586b52}
+.plan-rating.neutral{background:#f3e2d9;color:#78655d}
+.plan-no-food{color:#849087;font-size:11px;font-style:italic;line-height:1.5}
+.plan-no-food small{display:block;font-size:10px;margin-top:3px}
+.plan-footer{font-size:12px;color:var(--muted);line-height:1.75;margin:13px 4px 0}
+@media(max-width:760px){
+.plan-top{padding:17px}.plan-controls{display:block}.plan-controls .field{max-width:none;margin-bottom:15px}
+.plan-week{justify-content:space-between}.plan-week strong{min-width:auto;font-size:17px}
+.plan-table{min-width:980px}.plan-table thead th.plan-corner,.plan-table .plan-row-label{width:125px}
+}
+@media(prefers-reduced-motion:reduce){.plan-slot{scroll-behavior:auto}}
 </style>
 </head>
 <body>
@@ -282,7 +311,7 @@ syncKitchenRecipes();
 render();
 })();
 </script>
-<script src="./meal-plan.js?v=weekly-20261127-1"></script>
+<script src="./meal-plan.js?v=timetable-20261127-1"></script>
 
 <script>
 (() => {
