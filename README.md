@@ -10,6 +10,12 @@ The **Recipes tab is the master collection.** The Palate automatically reflects 
 
 **Migrating from the original local HTML file:** The previous `The_Palate_TS4_v2.html` opened via `file://` has different browser storage from GitHub Pages. Export **Back up** from the original app, then open **The Palate → Data & help → Restore a backup (.json)** on this hosted site. Restore replaces The Palate data on that site, so migrate before making new taste entries there. It does not replace the Kitchen library.
 
+## Weekly meal plans
+
+Open **The Palate → Meal Plan** to select an individual Sim and generate a Monday-to-Sunday meal plan from their saved liked (4/5) and loved (5/5) recipes. Breakfast/Brunch, Lunch, Dinner, Snacks, Dessert and Drinks have separate sections. The main Kitchen meal category determines the section, falling back to Palate type tags for older recipes. One liked lunch repeats every day; unknown, neutral, disliked and hated dishes are never inserted. Empty categories stay blank.
+
+Each week and Sim has a separately saved schedule, included in Palate JSON backups. **Randomise again** replaces that week's schedule, and the plan remains unchanged otherwise. You can drag and drop a dish into any slot, including a different day or meal category, swapping with the destination dish or moving into an empty slot. For phones, tablets and keyboard users, select a dish and then its destination to perform the same move.
+
 ## Features
 
 - Add, edit, and delete recipes manually.
