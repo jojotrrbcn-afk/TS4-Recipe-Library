@@ -7,7 +7,7 @@
   <meta name="description" content="Your personal The Sims 4 CC recipe library. Add recipes by hand and let the randomiser choose what to cook.">
   <title>Little Sim Kitchen | Recipe Library</title>
   <link rel="stylesheet" href="./styles.css?v=palate-integration-20261127-1">
-  <script src="./app.js?v=palate-integration-20261127-1" defer></script>
+  <script src="./app.js?v=automatic-palate-sync-20261127-1" defer></script>
 </head>
 <body>
   <div class="site-shell">
@@ -115,14 +115,13 @@
           </div>
         </div>
         <div class="palate-tools">
-          <button id="copyToPalateBtn" class="button button-accent" type="button">＋ Add missing Kitchen recipes to The Palate</button>
-          <p>Copies recipes and ingredients from your Kitchen library without overwriting saved taste ratings. Add flavour, texture and cuisine tags in The Palate for more detailed results.</p>
+          <p><strong>Recipes sync automatically.</strong> Add or edit your dishes in the main Recipes tab and they'll appear here with their ingredients, ready for taste testing. Add flavour, texture and cuisine tags under Taste details. Your Sims' existing opinions remain saved.</p>
         </div>
         <details class="palate-migration">
           <summary>Already have Sims and taste history in the downloaded The Palate app?</summary>
           <p>Open your original <strong>The_Palate_TS4_v2.html</strong>, click <strong>Back up</strong> and save its JSON file. Here, open <strong>Data &amp; help → Restore a backup (.json)</strong> in The Palate below. Your existing local-file data cannot transfer automatically to this website. Import your old backup <em>before</em> adding new Palate data, because restore replaces Palate's current data.</p>
         </details>
-        <iframe id="palateFrame" class="palate-frame" src="./palate.html?v=integration-20261127-1" title="The Palate taste-testing and Sim profiles" loading="lazy"></iframe>
+        <iframe id="palateFrame" class="palate-frame" src="./palate.html?v=automatic-palate-sync-20261127-1" title="The Palate taste-testing and Sim profiles" loading="lazy"></iframe>
       </section>
     </main>
     <footer class="site-footer">
