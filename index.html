@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#EAE0CC">
   <meta name="description" content="Your personal The Sims 4 CC recipe library. Add recipes by hand and let the randomiser choose what to cook.">
   <title>Little Sim Kitchen | Recipe Library</title>
-  <link rel="stylesheet" href="./styles.css?v=palette-20261109-2">
-  <script src="./app.js?v=cheesemaking-20261121-1" defer></script>
+  <link rel="stylesheet" href="./styles.css?v=creator-browser-20261127-1">
+  <script src="./app.js?v=creator-browser-20261127-1" defer></script>
 </head>
 <body>
   <div class="site-shell">
@@ -40,7 +40,8 @@
         <div class="stat"><span id="mealCount" class="stat-number">0</span><span class="stat-label">meal categories</span></div>
         <div class="stat-note">Made for the moments when you just can't decide what your Sim should eat. <span aria-hidden="true">✳</span></div>
       </section>
-      <div class="workspace">
+      <div class="workspace library-closed" id="workspace">
+        <div class="picker-column">
         <section class="picker panel" aria-labelledby="pickerTitle">
           <div class="panel-heading">
             <span class="section-kicker">01 / THE RANDOMISER</span>
@@ -66,10 +67,23 @@
           </div>
           <p class="picker-footnote">Every matching recipe gets its turn before repeats.</p>
         </section>
-        <section class="library panel" aria-labelledby="libraryTitle">
+        <div class="picker-actions">
+          <button id="browseRecipesBtn" class="button button-primary browse-button" type="button" aria-expanded="false" aria-controls="librarySection">▤ Recipes</button>
+          <button id="addBtn" class="button button-accent add-recipe-shortcut" type="button"><span aria-hidden="true">＋</span> Add recipe</button>
+        </div>
+        </div>
+        <section id="librarySection" class="library panel" aria-labelledby="libraryTitle" hidden>
           <div class="library-heading">
-            <div><span class="section-kicker">02 / YOUR COLLECTION</span><h2 id="libraryTitle">The recipe <em>box.</em></h2><p class="section-description">A home for every dish you discover.</p></div>
-            <button id="addBtn" class="button button-accent" type="button"><span aria-hidden="true">＋</span> Add recipe</button>
+            <div><span class="section-kicker">02 / YOUR COLLECTION</span><h2 id="libraryTitle">The recipe <em>box.</em></h2><p class="section-description">Browse your recipes by CC creator.</p></div>
+          </div>
+          <div id="creatorView" class="creator-view">
+            <p class="creator-intro">Choose a creator to see their recipes.</p>
+            <div id="creatorList" class="creator-list"></div>
+          </div>
+          <div id="creatorRecipesView" class="creator-recipes-view" hidden>
+          <div class="creator-breadcrumb">
+            <button id="backToCreators" class="button button-subtle back-to-creators" type="button">← All creators</button>
+            <h3 id="activeCreatorTitle" class="active-creator-title"></h3>
           </div>
           <div class="library-filters">
             <label class="search-wrap"><span aria-hidden="true">⌕</span><span class="visually-hidden">Search recipes</span><input id="searchInput" type="search" placeholder="Search recipes, creators, ingredients…"></label>
@@ -82,6 +96,7 @@
             <button id="prevPage" class="button button-subtle" type="button">← Previous</button>
             <span id="pageLabel"></span>
             <button id="nextPage" class="button button-subtle" type="button">Next →</button>
+          </div>
           </div>
         </section>
       </div>
