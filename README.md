@@ -2,6 +2,14 @@
 
 A lightweight, manually maintained recipe library and randomiser for The Sims 4 custom food recipes.
 
+## The Palate integration
+
+Use the two tabs at the top: **Recipes** for the existing Little Sim Kitchen collection and randomiser, or **The Palate** for the complete uploaded v2 taste journal (Sim profiles, preferences, favourites, taste tests, and the four-column recipe board).
+
+The two systems use independent browser storage keys, so adding the second tab does not replace any existing Kitchen recipes. In The Palate tab, **Add missing Kitchen recipes to The Palate** copies recipes and their available ingredients to the taste journal without overwriting existing ratings or preferences. The Palate can then be enriched with flavour, cuisine, and texture tags. It is an opt-in one-way copy, not automatic two-way synchronisation.
+
+**Migrating from the original local HTML file:** The previous `The_Palate_TS4_v2.html` opened via `file://` has different browser storage from GitHub Pages. Export **Back up** from the original app, then open **The Palate → Data & help → Restore a backup (.json)** on this hosted site. Restore replaces The Palate data on that site, so migrate before making new taste entries there. It does not replace the Kitchen library.
+
 ## Features
 
 - Add, edit, and delete recipes manually.
