@@ -6,7 +6,8 @@ A lightweight, manually maintained recipe library and randomiser for The Sims 4 
 
 - Add, edit, and delete recipes manually.
 - Save a recipe name, meal category, CC creator, Cooking/Baking/Gourmet Cooking/Canning/Cheesemaking skill requirement, minimum level (1–10), ingredients, original recipe URL, and notes.
-- Search recipes and filter by meal category.
+- Open the Recipes browser below the randomiser, select a CC creator, and view that creator's recipes alphabetically.
+- Search and filter by meal category within a creator's recipes; the Add recipe button remains available below the randomiser.
 - Randomly choose a recipe, optionally filtering by meal category or creator.
 - Randomiser uses a shuffled bag so every eligible recipe is chosen once before it repeats.
 - Existing saved recipes and version 1 JSON backups remain compatible. Recipes with no skill information are shown as unspecified until you edit them.
